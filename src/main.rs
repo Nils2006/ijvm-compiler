@@ -1,6 +1,7 @@
 use std::{env, fs};
 
 fn main() {
+
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
         println!("Usage: {} <file_path>", args[0]);
@@ -15,6 +16,9 @@ fn main() {
     file_contents_base64.push(0x00u8);
 
     for line in buffer {
+        if line.starts_with("#") || line.starts_with("//") {
+            continue;
+        }
         let instructions = line.split(" ").collect::<Vec<&str>>();
         for instruction in instructions {
             match instruction {
@@ -37,12 +41,13 @@ fn main() {
                 "NOP" => file_contents_base64.push(0x00),
                 "POP" => file_contents_base64.push(0x57),
                 "SWAP" => file_contents_base64.push(0x5F),
+                "//" => return,
+                "#" => return,
                 "" => continue,
                 _ => {
-                    let signed_value = i8::from_str_radix(instruction, 16)
+                    let signed_value = u8::from_str_radix(instruction, 16)
                         .unwrap_or_else(|_| panic!("Invalid hex value: {}", instruction));
 
-                    println!("Signed value: {}", signed_value);
 
                     // Konvertieren in u8, um es in den Vec zu pushen
                     let unsigned_value = signed_value as u8;
